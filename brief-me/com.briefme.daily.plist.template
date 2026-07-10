@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Template: install.sh fills in the placeholders for your machine and writes the
+     real plist to ~/Library/LaunchAgents/. Do not load this file directly. -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.briefme.daily</string>
+
+    <!-- Runs from ~/Library/Application Support (NOT ~/Documents): macOS TCC
+         blocks launchd background jobs from reading Documents/Desktop/Downloads. -->
+    <!-- Runs via a generated wrapper (run.sh) that sets PATH in-shell, because
+         launchd does not reliably apply the EnvironmentVariables PATH below. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>__RUNTIME_DIR__/run.sh</string>
+    </array>
+
+    <!-- ~7 AM local. If the Mac is asleep/off at this time, launchd runs the
+         job on the next wake/login instead of skipping it. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>5</integer>
+    </dict>
+
+    <!-- Catch-up: re-check periodically. launchd fires a missed interval on wake,
+         so opening the lid triggers a run; the run.sh wrapper passes --if-needed,
+         which keeps it to one real generation (and one notification) per day. -->
+    <key>StartInterval</key>
+    <integer>1800</integer>
+
+    <!-- launchd gives jobs a minimal environment; set what claude/node need. -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>HOME</key>
+        <string>__HOME__</string>
+        <key>PATH</key>
+        <string>__NODE_BIN__:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/briefme.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/briefme.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
